@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
+      # Si quieres persistencia de datos:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - pdfnet
+
+  html-to-pdf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: html-to-pdf-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - pdfnet
+
+networks:
+  pdfnet:
+    driver: bridge
+
+volumes:
+  n8n_data:
